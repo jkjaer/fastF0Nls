@@ -1,0 +1,193 @@
+from __future__ import division
+import scipy.io.wavfile as wave
+import pyaudio
+import struct
+import numpy as np
+import matplotlib.pyplot as plt
+import random as ran
+import scipy.signal as sig
+import time
+import tkinter as tk
+
+import single_pitch
+import hs_pitch
+import sys
+sys.path.append('/mnt/data/work/smard/code/python/lib/autocorrelation_methods/fundamental_frequency/')
+import yin
+import note_gui
+
+
+NOTE_GUI = False
+DISP = True
+
+###########################
+# audio input setup
+###########################
+# format of each sample
+FORMAT = pyaudio.paInt16
+# number of microphones
+Nch = 1
+# sampling frequency
+fs = 8000
+# frame length in seconds
+tf = 0.01
+# frame length in samples
+Nf = int(np.round(fs*tf))
+# Skip some samples to make everything run
+EVERY = 20
+# total record time
+T = 100
+# total number of samples
+N = int(T*fs)
+#
+L = 12 # maximum number of harmonics
+F = 5*L*Nf #int(100*Nf/2)
+wl = 2*np.pi*50/fs
+wu = np.pi # @l=1
+
+sp = single_pitch.single_pitch(L, F, Nf, 
+                               np.array([wl/(2*np.pi), wu/(2*np.pi)])
+                           )
+lnBFZeroOrder = 150.0
+
+###########################
+# Estimate the pitch
+###########################
+
+#fs, x = wave.read('roy.wav')
+#x = x/2**15 #normalise to 16 bit
+#N = x.shape[0]
+
+K = int(np.floor(N/Nf))
+
+delta = 3 # prior parameter of hyper-g prior
+tol = 1e-4 # tolerance of refined pitch estimate
+#fmap = np.zeros((K,L))
+#fstd = np.zeros((K,L))
+#if delta > 1:
+#  nBF = np.zeros((K,L+1))
+#else:
+#  nBF = np.zeros((K,L))
+
+fsel = np.zeros((3, K))
+lsel = np.zeros((3, K), dtype=np.int)
+
+# initialize note gui (must be before the plot)
+if NOTE_GUI:
+    root = tk.Tk()
+    w = note_gui.note_gui(root, 2)
+
+
+# initialise dynamic plot
+fig = plt.figure(1,figsize=(15,6))
+plt.ion()
+ax = fig.add_subplot(111)
+tdata, ydata1, ydata2, ydata3 = [], [], [], []
+line1, = ax.semilogy(tdata, ydata1, 'rs', animated=True, lw=2, markersize=8)
+line2, = ax.semilogy(tdata, ydata2, 'bo', animated=True, lw=2, markersize=4)
+line3, = ax.semilogy(tdata, ydata2, 'gx', animated=True, lw=2, markersize=6)
+fig.legend((line1, line2, line3), 
+           ('NLS','HS','YIN'), 'upper right')
+
+ax.set_xlim(0, 10)
+ax.set_ylim(20, 4000)
+ax.grid()
+ax.set_xlabel( 't [s]' )
+ax.set_ylabel( 'f [Hz]' )
+background = fig.canvas.copy_from_bbox(ax.bbox)
+fig.canvas.draw()
+fig.show()
+
+
+# start audio device
+print("* recording")
+p = pyaudio.PyAudio()
+stream = p.open(format=FORMAT, channels=Nch, rate=fs,
+                input=True, output=False, frames_per_buffer=Nf)
+
+# run over all the frames that was requested
+for k in range(K):
+    t = (k-1/2)*tf
+    #read data from the input buffer
+    while stream.get_read_available() < Nf:
+      #wait for new data to arrive
+      plt.pause(0.0001)
+  
+    data = stream.read(Nf)
+  
+    if( k % EVERY == 0 ): # On tlj computer, only every x to make it follow
+
+      #convert from binary data to a numpy array
+      xs = np.array(struct.unpack(str(Nch*Nf) + 'h',data))*(2**(-15));
+    
+      # The excact NLS estimator
+      w1 = sp.est(xs, lnBFZeroOrder)
+
+      lsel[0, k] = sp.modelOrder()
+      
+      if (lsel[0, k] == 0):
+        fsel[0, k] = np.nan
+      else:
+        fsel[0, k] = fs*w1/(2*np.pi)
+      
+  
+      # Harmonic summation
+      w2, wvar, nBF = hs_pitch.abffe_real(xs, L, wl, wu, F, delta, tol,
+                                          lnBFZeroOrder)
+      f2 = fs*w2/(2*np.pi)
+    
+      lsel[1, k] = np.argmax(nBF)
+    
+      if (lsel[1, k] == 0):
+        fsel[1, k] = np.nan
+      else:
+        fsel[1, k] = f2[lsel[1, k]-1] # f2 starts at model order 1
+	
+
+      # Yin alg
+      w3 = yin.yin(xs)
+      fsel[2, k] = w3*fs
+
+      # print the estimated model order and frequencies
+      if DISP:
+          print('NLS: order={0:02d} f0={1:06.2f} Hz, HS: order={2:02d} f0={3:06.2f} Hz, YIN: f0={4:06.2f}'
+                .format(lsel[0, k], fsel[0, k], lsel[1, k], fsel[1, k], fsel[2, k]), end='\r')
+
+      if NOTE_GUI:
+          w.set(0, fsel[0, k], lsel[0, k])
+          w.set(1, fsel[1, k], lsel[1, k])
+
+      #plotting
+      fig.canvas.restore_region(background)
+      tdata.append(t)
+      ydata1.append(fsel[0, k].flatten())  
+      ydata2.append(fsel[1, k].flatten())  
+      ydata3.append(fsel[2, k].flatten())  
+      tmin, tmax = ax.get_xlim()
+      if t>=tmax-1:
+        tmin = t - 9
+        tmax = t + 1
+        ax.set_xlim(tmin, tmax)
+        fig.canvas.draw()
+        background = fig.canvas.copy_from_bbox(ax.bbox)
+      
+      line1.set_data(tdata, ydata1)
+      line2.set_data(tdata, ydata2)
+      line3.set_data(tdata, ydata3)
+
+      # just draw the animated artist
+      ax.draw_artist(line1)
+      ax.draw_artist(line2)
+      ax.draw_artist(line3)
+
+      # just redraw the axes rectangle
+      fig.canvas.blit(ax.bbox)
+
+print("* done")
+stream.stop_stream()
+stream.close()
+p.terminate()
+del sp
+
+raw_input('Press any key to end the program')
+

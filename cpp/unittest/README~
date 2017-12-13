@@ -1,0 +1,6 @@
+apt-get install libhdf5-dev
+
+Run files:
+
+  test : core pitch estimation functionality
+  test_th: test of Toeplitz plus Hankel solver

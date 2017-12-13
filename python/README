@@ -1,0 +1,25 @@
+Run file single_pitch for an example of using the compiled library
+  ../lib/single_pitch.so
+
+- Example:
+  python single_pitch.py
+
+- Import the module as
+
+import single_pitch
+
+- Possible calling sequence
+
+import numpy as np
+import single_pitch
+
+N = 500
+L = 15
+pitch_bounds = np.array([0.01, 0.045])
+F = 5*L*N
+sp = single_pitch(L, F, N, pitch_bounds)
+lnBFZeroOrder = 100.0
+
+.... data in numpy array ....
+
+omega_h = sp.est(data, lnBFZeroOrder)

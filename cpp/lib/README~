@@ -1,0 +1,37 @@
+Compiles a library of the fast single pitch method
+
+Additional packages:
+  Either MKL or FFTW
+
+FFW3
+apt-get install libfftw3-3 libfftw3-dev
+
+MKL:
+ Download MKL: https://software.intel.com/en-us/mkl
+ Remember to set path, e.g. using
+
+  source /opt/intel/compilers_and_libraries/linux/mkl/bin/mklvars.sh intel64
+
+Makefile
+ Set optional MKL
+
+Select one of the following LINK options
+
+  - Use MKL for FFTs and vector operations and a recursive Chebyshev method
+     for computing sinusoidal vectors
+     
+     LINK = -DMKL $(MKL) -DCHEBYSHEV
+     
+  - Use MKL for FFTs and vector operations
+  
+     LINK = -DMKL $(MKL)
+
+  - Use FFTW3 for FFTs and direct for-loop implementation of vector-operations.
+
+     LINK = -lfftw3
+
+Run files:
+
+  ./timing : Prints timing measurement for a single setup
+  ./profile : A simpler setup usefull for analysing using a profiler e.g.
+     valgrind --tool=callgrind ./profile

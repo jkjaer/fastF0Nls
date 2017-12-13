@@ -1,0 +1,47 @@
+This is a unittest framework based on Googletest. The computed values are compared to
+pregenerated and saved values in HDF5 files.
+
+
+Mandatory:
+ Googletest
+ HDF5 dev
+and either MKL or FFTW
+
+Googletest:
+  Get and compile googletest from https://github.com/google/googletest
+
+HDF5:
+  Get and install: Using Ubuntu
+     apt-get install libhdf5-dev
+
+FFW3
+apt-get install libfftw3-3 libfftw3-dev
+
+MKL:
+ Download MKL: https://software.intel.com/en-us/mkl
+ Remember to set path, e.g. using
+
+source /opt/intel/compilers_and_libraries/linux/mkl/bin/mklvars.sh intel64
+
+Makefile
+ Set paths of GTEST, HDF5, and optional MKL
+
+Select one of the following LINK options
+
+  - Use MKL for FFTs and vector operations and a recursive Chebyshev method
+     for computing sinusoidal vectors
+     
+     LINK = -DMKL $(MKL) -DCHEBYSHEV
+     
+  - Use MKL for FFTs and vector operations
+  
+     LINK = -DMKL $(MKL)
+
+  - Use FFTW3 for FFTs and direct for-loop implementation of vector-operations.
+
+     LINK = -lfftw3
+
+Run files:
+
+  test : core pitch estimation functionality
+  test_th: test of Toeplitz plus Hankel solver
