@@ -26,7 +26,7 @@ The code is published under a BSD 3-clause "New" or "Revised" License. This is a
 
 Constructive feedback in any form is also very much appreciated. This applies to everything from bugs to data where the estimator fails. Please send your feedback to Jesper (jkn@create.aau.dk).
 
-The has been written and is maintained by
+The code has been written and is maintained by
 
 - Tobias Lindstrøm Jensen, Intel Mobile Communications Denmark, Aalborg, Denmark
 - Jesper Kjær Nielsen, Audio Analysis Lab, CREATE, Aalborg University, Denmark
