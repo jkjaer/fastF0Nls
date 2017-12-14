@@ -11,11 +11,11 @@ The nonlinear least squares (NLS) estimator of the fundamental frequency is a pa
 
 In addition to these papers, we have also made a one hour video tutorial on fundamental frequency in general and our fast algorithm in particular. The video is published on [YouTube](https://www.youtube.com/watch?v=F0XgU-9ERp4).
 
-Please note that the code only contains a pitch estimator and NOT a pitch tracker. The difference is that a tracker contains a smoothing step in addition to the estimator. In order to minimise the risk of, e.g., octave errors (aka pitch halving), the smooting step smoothes out the estimates that the estimator produces for every data segment. Of course, our estimator can be used in a pitch tracker, and we recommend that the smoothing method by Tabrikian et al. is used. See more in
+To get started with the code, please see the examples and the documentation.
+
+Please note that the code only contains a pitch estimator and NOT a pitch tracker. The difference is that a tracker contains a smoothing step on top of the estimator. The smooting step is there to minimise the risk of, e.g., octave errors (aka pitch halving) by smoothing out the estimates produced by the estimator which typically analyse the data on a segment-by-segment basis. Of course, our estimator can also be used inside a pitch tracker, and we recommend that the smoothing step by Tabrikian et al. is used. See more in
 
 - Maximum a-posteriori probability pitch tracking in noisy environments using harmonic model, Tabrikian, Joseph; Dubnov, Shlomo; and Dickalov, Yulya. In: IEEE Transactions on Speech and Audio Processing 12 (1), 2004, pp. 76-87.
-
-To get started with the code, please see the examples and the documentation.
 
 ## License
 
