@@ -1,4 +1,4 @@
-# fastF0Nls - fast nonlinear least squares estimation of the fundamental frequency (aka pitch)
+# fastF0Nls - Fast Nonlinear Least Squares Estimation of the Fundamental Frequency (aka Pitch)
 
 Periodic signals are encountered in many real-world applications such as music processing, speech processing, sonar, order analysis, and electrocardiography (ECG). Such signals can be modelled as a weighted sum of sinusoids whose frequencies are integer multiples of a common fundamental frequency which in audio and speech applications is often referred to as the pitch. Therefore, an important and fundamental problem in the above mentioned applications is to estimate this fundamental frequency from an observed (and often noisy) data set.
 
@@ -9,7 +9,7 @@ The nonlinear least squares (NLS) estimator of the fundamental frequency is a pa
 - Fast fundamental frequency estimation: Making a statistically efficient estimator computationally efficient. Nielsen, Jesper Kjær; Jensen, Tobias Lindstrøm; Jensen, Jesper Rindom; Christensen, Mads Græsbøll; Jensen, Søren Holdt. In: Signal Processing, 135, 2017, pp. 188-197.
 - Bayesian Model Comparison With the g-Prior. Nielsen, Jesper Kjær; Christensen, Mads Græsbøll; Cemgil, Ali Taylan; Jensen, Søren Holdt. In: IEEE Transactions on Signal Processing, 62 (1), 2014, pp. 225-238.
 
-In addition to these papers, we have also made a one hour video tutorial on fundamental frequency in general and our fast algorithm in particular. The video is published on [YouTube](https://www.youtube.com/watch?v=F0XgU-9ERp4).
+In addition to these papers, we have also made a one hour video tutorial on fundamental frequency estimation in general and our fast algorithm in particular. The video is published on [YouTube](https://www.youtube.com/watch?v=F0XgU-9ERp4).
 
 To get started with the code, please see the examples and the documentation.
 
