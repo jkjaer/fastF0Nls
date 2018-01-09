@@ -22,9 +22,9 @@ if length(varargin) == 2
     epsilon = N*varargin{2};
 end
 
-n = -(N-1)/2:-(N-1)/2+N-1;
+n = (0:N-1)'-(N-1)/2;
 
-E = exp(1i*2*pi*f0*n'*(1:l));
+E = exp(1i*2*pi*f0*n*(1:l));
 if dcIsIncluded
     C = [ones(N, 1), real(E)]; %cos(omega*n'*(1:l));
 else

@@ -76,7 +76,7 @@ classdef fastF0Nls < handle
 % This object implements a fast approach of evaluating the
 %  objective function on a uniform grid for all model order.
 %
-% Current version: 1.0.0 (2017-04-19)
+% Current version: 1.1.0 (2018-01-09)
 %
 % Based on the papers:
 %
@@ -205,7 +205,6 @@ classdef fastF0Nls < handle
                  sin(pi*(1:2*L)'*obj.fullPitchGrid'*N)./...
                  (2*sin(pi*(1:2*L)'*obj.fullPitchGrid'))];
 
-            
             obj.fftShiftVector = ...
                 exp(1i*2*pi*(0:ceil(F/2)-1)'*(N-1)/(2*F));
 
@@ -228,13 +227,10 @@ classdef fastF0Nls < handle
                                       % vector
 
                 
-            varargout{1} = computeAllCostFunctions(x, obj.F, obj.L, obj.pitchBounds, ...
-                                            obj.validFftIndices,...
-                                            obj.fftShiftVector,...
-                                            obj.nPitches,...
-                                            obj.crossCorrelationVectors,...
-                                            obj.Gamma1, obj.Gamma2, ...
-                                            obj.dcIsIncluded);
+            varargout{1} = computeAllCostFunctions(x, obj.L, ...
+            	obj.fullPitchGrid, obj.fftShiftVector, ...
+                obj.crossCorrelationVectors, obj.Gamma1, obj.Gamma2, ...
+                obj.dcIsIncluded);
             
             if nargout == 2
                 varargout{2} = obj.fullPitchGrid;
@@ -264,35 +260,14 @@ classdef fastF0Nls < handle
             end
             
             % if the data consists of all zeros then return zero model order
-            if x'*x < 1e-14;
-                f0h = nan;
-                ellh = 0;
+            if x'*x < 1e-14
+                estimatedPitch = nan;
+                estimatedOrder = 0;
             else
                 % Step 1: Compute cost function
                 costs = obj.computeCostFunctions(x);
                     
-                % Step 2: Compute course estimates
-                coarsePitchEstimates = nan(obj.L, 1);
-                for l = 1:obj.L
-                    [~, pitchIndex] = max(costs(l, :));
-                    coarsePitchEstimates(l) = obj.fullPitchGrid(pitchIndex(1));
-                end
-
-                % Step 3: Refine
-                pitchLimits = coarsePitchEstimates*ones(1, 2)+...
-                    ones(obj.L, 1)*[-1/obj.F, 1/obj.F];
-                pitchEstimates = nan(obj.L, 1);
-                for l = 1:obj.L
-                    costFunction = @(f0) -objFunction(f0, x, l, ...
-                                                      obj.dcIsIncluded, ...
-                                                      obj.epsilon_ref);
-                    [f0l, f0u] = ...
-                        goldenSectionSearch(costFunction, pitchLimits(l, 1), ...
-                                        pitchLimits(l, 2), tolerance);
-                    pitchEstimates(l) = (f0l+f0u)/2;
-                end
-
-                % Step 4: Estimate model order and fundamental
+                % Step 2: Estimate model order and fundamental frequency
                 cod = costs*(1/(x'*x));
                 delta = 3;
                 [~, logMarginalLikelihood] = ...
@@ -300,23 +275,32 @@ classdef fastF0Nls < handle
                 bayesFactor = trapezBayesFactor(logMarginalLikelihood, ...
                                                 obj.fullPitchGrid);
                 [~, estimatedOrderIdx] = max(bayesFactor);
+                estimatedOrder = estimatedOrderIdx-1;
 
-                ellh = estimatedOrderIdx-1;
-                if ellh > 0
-                    f0h = pitchEstimates(ellh);
+                % Step 3: Refine if estimated model order > 0
+                if estimatedOrder > 0
+                    [~, pitchIndex] = max(costs(estimatedOrder, :));
+                    coarsePitchEstimate = obj.fullPitchGrid(pitchIndex(1));
+                    pitchLimits = coarsePitchEstimate+[-1/obj.F, 1/obj.F];
+                    costFunction = @(f0) -objFunction(f0, x, ...
+                        estimatedOrder, obj.dcIsIncluded, obj.epsilon_ref);
+                    [f0l, f0u] = ...
+                        goldenSectionSearch(costFunction, ...
+                        pitchLimits(1), pitchLimits(2), tolerance);
+                    estimatedPitch = (f0l+f0u)/2;
                 else
-                    f0h = nan;
+                    estimatedPitch = nan;
                 end
             end
                 
             if nargout >= 1
-                varargout{1} = f0h;
+                varargout{1} = estimatedPitch;
             end
             if nargout >= 2
-                varargout{2} = ellh;
+                varargout{2} = estimatedOrder;
             end
             if nargout >= 3
-                [~, alpha] = objFunction(f0h, x, ellh, obj.dcIsIncluded);
+                [~, alpha] = objFunction(estimatedPitch, x, estimatedOrder, obj.dcIsIncluded);
                 varargout{3} = alpha;
             end
             
