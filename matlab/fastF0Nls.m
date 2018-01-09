@@ -62,8 +62,8 @@ classdef fastF0Nls < handle
 %      Input:
 %    
 %         x:    signal (vector, length N)    
-%         tolerance: (Optional, default 1e-8). Refinement tolerance
-%                       unit periods/sample
+%         tolerance: (Optional, default is 1/F). Refinement 
+%           tolerance in unit periods/sample.
 %
 %     Output:
 %          
@@ -76,7 +76,6 @@ classdef fastF0Nls < handle
 % This object implements a fast approach of evaluating the
 %  objective function on a uniform grid for all model order.
 %
-% Current version: 1.1.0 (2018-01-09)
 %
 % Based on the papers:
 %
@@ -96,7 +95,7 @@ classdef fastF0Nls < handle
 % Authors:  
 %      J. K. Nielsen, kjn@es.aau.dk
 %      T. L. Jensen, tlj@es.aau.dk
-%   
+%
     
     % Can only be set in the constructor
     properties (SetAccess=immutable) 
@@ -118,7 +117,7 @@ classdef fastF0Nls < handle
     end
 
     properties
-        tolerance = 1e-8
+        tolerance
     end
     
     properties (SetAccess=private)
@@ -153,6 +152,7 @@ classdef fastF0Nls < handle
             else
                 obj.F = 5*N*L;
             end
+            setTolerance(obj, 1/obj.F);
             
             if length(varargin) >= 3
                 if isscalar(varargin{3})
@@ -277,17 +277,26 @@ classdef fastF0Nls < handle
                 [~, estimatedOrderIdx] = max(bayesFactor);
                 estimatedOrder = estimatedOrderIdx-1;
 
-                % Step 3: Refine if estimated model order > 0
+                % Step 3: Refine if estimated model order > 0 and the
+                % tolerance is set to a smaller tolerance than what is
+                % provided by the grid. Otherwise return the coarse
+                % estimate
                 if estimatedOrder > 0
                     [~, pitchIndex] = max(costs(estimatedOrder, :));
                     coarsePitchEstimate = obj.fullPitchGrid(pitchIndex(1));
-                    pitchLimits = coarsePitchEstimate+[-1/obj.F, 1/obj.F];
-                    costFunction = @(f0) -objFunction(f0, x, ...
-                        estimatedOrder, obj.dcIsIncluded, obj.epsilon_ref);
-                    [f0l, f0u] = ...
-                        goldenSectionSearch(costFunction, ...
-                        pitchLimits(1), pitchLimits(2), tolerance);
-                    estimatedPitch = (f0l+f0u)/2;
+                    if obj.tolerance < 1/obj.F
+                        pitchLimits = ...
+                            coarsePitchEstimate+[-1/obj.F, 1/obj.F];
+                        costFunction = @(f0) -objFunction(f0, x, ...
+                            estimatedOrder, obj.dcIsIncluded, ...
+                            obj.epsilon_ref);
+                        [f0l, f0u] = ...
+                            goldenSectionSearch(costFunction, ...
+                            pitchLimits(1), pitchLimits(2), tolerance);
+                        estimatedPitch = (f0l+f0u)/2;
+                    else
+                        estimatedPitch = coarsePitchEstimate;
+                    end
                 else
                     estimatedPitch = nan;
                 end
