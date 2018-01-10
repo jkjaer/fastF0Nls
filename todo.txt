@@ -1,6 +1,3 @@
 C++:
 - write a Python example (as the MATLAB example)  which uses the C++ implementation
 
-MATLAB:
-- do model comparison before refinement
-
