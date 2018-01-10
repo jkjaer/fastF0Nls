@@ -23,7 +23,7 @@ function testProducedCostFunctionNoDC(testCase)
     ell = 2;
     L = 10;
     alpha = [0; randn(2*ell,1)];
-    
+    tolerance = 1e-8;    
     pitchBounds = [1/N,0.5-1/N];
     f0 = (pi+1.5)/N;
     
@@ -42,21 +42,21 @@ function testProducedCostFunctionNoDC(testCase)
     testCase.assertEqual(actCosts, expCosts, ...
                          'absTol', 1e-10);
     
-    [f0h, ellh, alphah] = f.estimate(x);
+    [f0h, ellh, alphah] = f.estimate(x, tolerance);
 
     testCase.assertEqual(f0h, f0, 'absTol', 1e-8)
     testCase.assertEqual(ellh, ell, 'absTol', 1e-14)
     testCase.assertEqual(alphah, alpha(2:end), 'absTol', 1e-8)
     
-    % Try to set new bounds and make sure everything works
-    f.setTolerance(1e-9);
+    % Try to set a new tolerance and make sure everything works
+    tolerance = 1e-9; 
 
     actCosts = f.computeCostFunctions(x);
 
     testCase.assertEqual(actCosts, expCosts, ...
                          'absTol', 1e-10);
     
-    [f0h, ellh] = f.estimate(x);
+    [f0h, ellh] = f.estimate(x, tolerance);
 
     testCase.assertEqual(f0h, f0, 'absTol', 1e-8)
     testCase.assertEqual(ellh, ell, 'absTol', 1e-14)
@@ -72,7 +72,7 @@ function testProducedCostFunctionDC(testCase)
     ell = 2;
     L = 10;
     alpha = [2.1; randn(2*ell,1)];
-    
+    tolerance = 1e-8;  
     pitchBounds = [1/N, 0.5-1/N];
     f0 = (pi+1.5)/N;
     
@@ -91,7 +91,7 @@ function testProducedCostFunctionDC(testCase)
     testCase.assertEqual(actCosts, expCosts, ...
                          'absTol', 1e-10);
     
-    [f0h, ellh, alphah] = f.estimate(x);
+    [f0h, ellh, alphah] = f.estimate(x, tolerance);
 
     testCase.assertEqual(f0h, f0, 'absTol', 1e-8)
     testCase.assertEqual(ellh, ell, 'absTol', 1e-14)
@@ -108,7 +108,7 @@ function testProducedCostFunctionDCHighRes(testCase)
     ell = 2;
     L = 10;
     alpha = [2.1; randn(2*ell,1)];
-    
+    tolerance = 1e-8;
     pitchBounds = [1/N, 0.5-1/N];
     f0 = (pi+1.5)/N;
     
@@ -127,7 +127,7 @@ function testProducedCostFunctionDCHighRes(testCase)
     testCase.assertEqual(actCosts, expCosts, ...
                          'absTol', 1e-10);
     
-    [f0h, ellh] = f.estimate(x);
+    [f0h, ellh] = f.estimate(x, tolerance);
 
     testCase.assertEqual(f0h, f0, 'absTol', 1e-8)
     testCase.assertEqual(ellh, ell, 'absTol', 1e-14)
@@ -142,17 +142,16 @@ function testProducedCostFunctionZeroModelOrder(testCase)
     N = 100;
     expModelOrder = 0;
     L = 10;
-    
+    tolerance = 1e-8;
     pitchBounds = [1/N, 0.5-1/N];
     expPitch = nan;
     
     F = 10*N*L;
-    resolution = 1/F;
     x = randn(N,1);
 
     f = fastF0Nls(N, L, pitchBounds, true, F);
 
-    [actPitch, actModelOrder] = f.estimate(x);
+    [actPitch, actModelOrder] = f.estimate(x, tolerance);
 
     testCase.assertEqual(actPitch, expPitch)
     testCase.assertEqual(actModelOrder, expModelOrder)

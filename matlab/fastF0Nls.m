@@ -116,23 +116,16 @@ classdef fastF0Nls < handle
         fftShiftVector
     end
 
-    properties
-        tolerance
-    end
-    
     properties (SetAccess=private)
         pitchBounds  % The current active bounds 
         fullPitchGrid
         validFftIndices
-        nPitches
+        defaultRefinementTol
+        refinementTol
     end
 
     methods
         
-        function setTolerance(obj, tolerance)
-            obj.tolerance = tolerance;
-        end
-                
         function obj = fastF0Nls(N, L, pitchBounds, varargin)
 
             % validate input 
@@ -152,7 +145,7 @@ classdef fastF0Nls < handle
             else
                 obj.F = 5*N*L;
             end
-            setTolerance(obj, 1/obj.F);
+            obj.defaultRefinementTol = 1/obj.F;
             
             if length(varargin) >= 3
                 if isscalar(varargin{3})
@@ -190,7 +183,7 @@ classdef fastF0Nls < handle
                 obj.pitchBounds = pitchBounds;
             end
             
-            if pitchBounds(1) < 1/nData
+            if pitchBounds(1) < 1/N
                 warning(['The lower pitch bound is set lower than one '...
                     ' period/segment. Inaccurate results might be '...
                     'produced - especially if you do not set the'...
@@ -204,7 +197,6 @@ classdef fastF0Nls < handle
             obj.validFftIndices = (minFftIndex:maxFftIndex)';
             obj.fullPitchGrid = obj.validFftIndices/F;
             nPitches = length(obj.fullPitchGrid);
-            obj.nPitches = nPitches;
             
             % cross-correlation vectors
             obj.crossCorrelationVectors = ...
@@ -227,8 +219,8 @@ classdef fastF0Nls < handle
 
             % validate input 
             if ~isvector(x) && length(x) == obj.N
-                error(sprintf(['First argument x must be vector of ' ...
-                               'length N=%d'], obj.N))
+                error(['First argument x must be vector of ' ...
+                               'length N=', num2str(obj.N)]);
             end
             x = reshape(x, obj.N, 1); % make sure its a column
                                       % vector
@@ -250,23 +242,23 @@ classdef fastF0Nls < handle
                 
             % validate input 
             if ~isvector(x) && length(x) == obj.N
-                error(sprintf(['First argument x must be vector of ' ...
-                               'length N=%d'], obj.N))
+                error(['First argument x must be vector of ' ...
+                               'length N=', num2str(obj.N)]);
             end
             x = reshape(x, obj.N, 1); % make sure its a column
                                       % vector
             
             if length(varargin) == 1
                 if isscalar(varargin{1})
-                    tolerance = varargin{1};
+                    obj.refinementTol = varargin{1};
                 else
                     error('Argument 2 is not a scalar')
                 end
             else
-                tolerance = obj.tolerance; % Use default
+                obj.refinementTol = obj.defaultRefinementTol;
             end
-            
-            % if the data consists of all zeros then return zero model order
+            % if the data consists of all zeros then return zero model 
+            % order
             if x'*x < 1e-14
                 estimatedPitch = nan;
                 estimatedOrder = 0;
@@ -291,15 +283,15 @@ classdef fastF0Nls < handle
                 if estimatedOrder > 0
                     [~, pitchIndex] = max(costs(estimatedOrder, :));
                     coarsePitchEstimate = obj.fullPitchGrid(pitchIndex(1));
-                    if obj.tolerance < 1/obj.F
+                    if obj.refinementTol < obj.defaultRefinementTol
                         pitchLimits = ...
                             coarsePitchEstimate+[-1/obj.F, 1/obj.F];
                         costFunction = @(f0) -objFunction(f0, x, ...
                             estimatedOrder, obj.dcIsIncluded, ...
                             obj.epsilon_ref);
-                        [f0l, f0u] = ...
-                            goldenSectionSearch(costFunction, ...
-                            pitchLimits(1), pitchLimits(2), tolerance);
+                        [f0l, f0u] = goldenSectionSearch(costFunction, ...
+                            pitchLimits(1), pitchLimits(2), ...
+                            obj.refinementTol);
                         estimatedPitch = (f0l+f0u)/2;
                     else
                         estimatedPitch = coarsePitchEstimate;
