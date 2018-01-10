@@ -189,6 +189,13 @@ classdef fastF0Nls < handle
             else
                 obj.pitchBounds = pitchBounds;
             end
+            
+            if pitchBounds(1) < 1/nData
+                warning(['The lower pitch bound is set lower than one '...
+                    ' period/segment. Inaccurate results might be '...
+                    'produced - especially if you do not set the'...
+                    'regularisation parameter.']);
+            end
 
             % Init
             F = obj.F;
