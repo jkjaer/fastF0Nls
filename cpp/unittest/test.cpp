@@ -715,6 +715,80 @@ TEST_F(RealDataTest, ModelOrderSelectionNoise) {
 
   status = H5Fclose(file);
 
+  /* construct object and compute  */
+  single_pitch * sp = new single_pitch(L, F, N, pb);
+
+  #ifdef SINGLE
+  float * xs = vector(N);
+  for(int l = 0 ; l < N ; ++l)
+    xs[l] = (float)x[l];
+  sp->compute(xs);
+  sp->refine(xs, 1e-8);
+  del_vector(xs);
+  #else
+  sp->compute(x);
+  sp->refine(x, 1e-8);
+  #endif
+
+  int estModelOrder = sp->model_order_selection(x);
+
+  // Control the Bayes Factors
+  
+  FTYPE lnBF[] = {22.976505179621622, 22.444499748782523, 423.7940152029966, 
+                  412.11543962457455, 400.92575920553287};
+
+  for( int k = 1 ; k <= L ; ++k )
+    ASSERT_NEAR(lnBF[k-1], sp->lnBF[k], EPS2)  
+      << "Bayes Factor differs at order = " << k ;
+
+  // With this realization the model order estimation should work
+  ASSERT_EQ(modelOrder, estModelOrder);
+
+  FTYPE omega_0h = sp->est(x);
+  ASSERT_NEAR(omega_0h/(2*M_PI), pitch, 1e-6);  
+
+  delete sp;
+  del_vector(x);
+}
+
+TEST_F(RealDataTest, ModelOrderSelectionNoiseBayes) {
+
+  hid_t file;
+  herr_t status;
+
+  /* extract data and output */
+  file = H5Fopen("unittest7.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+  
+  double d[1];
+  H5LTread_dataset(file, "/nData", H5T_NATIVE_DOUBLE, d);
+  int N = (int) d[0];
+
+  H5LTread_dataset(file, "/L", H5T_NATIVE_DOUBLE, d);
+  int L = (int) d[0];
+
+  H5LTread_dataset(file, "/F", H5T_NATIVE_DOUBLE, d);
+  int F = (int) d[0];
+
+  H5LTread_dataset(file, "/modelOrder", H5T_NATIVE_DOUBLE, d);
+  int modelOrder = (int) d[0];
+
+  H5LTread_dataset(file, "/pitch", H5T_NATIVE_DOUBLE, d);
+  double pitch = d[0];
+
+  double * x = vector(N);
+  H5LTread_dataset(file, "/data", H5T_NATIVE_DOUBLE, x);
+
+
+  double pitch_bounds[2];
+  H5LTread_dataset(file, "/pitchBounds", H5T_NATIVE_DOUBLE, pitch_bounds);
+  #ifdef DOUBLE
+  double * pb = pitch_bounds;
+  #else
+  float pb[2];
+  pb[0] = (float)pitch_bounds[0]; pb[1] = (float)pitch_bounds[1];
+  #endif
+
+  status = H5Fclose(file);
 
   /* construct object and compute  */
   single_pitch * sp = new single_pitch(L, F, N, pb);
@@ -745,14 +819,78 @@ TEST_F(RealDataTest, ModelOrderSelectionNoise) {
   // With this realization the model order estimation should work
   ASSERT_EQ(modelOrder, estModelOrder);
 
+  FTYPE omega_0h = sp->est(x, 20.0, 1e-6);
+  estModelOrder = sp->modelOrder();
+  ASSERT_NEAR(omega_0h/(2*M_PI), pitch, 1e-6);
+  ASSERT_EQ(modelOrder, estModelOrder);
 
-  FTYPE omega_0h = sp->est(x);
-  ASSERT_NEAR(omega_0h/(2*M_PI), pitch, 1e-6);  
-
-  
   delete sp;
   del_vector(x);
+}
 
+TEST_F(RealDataTest, ModelOrderSelectionNoiseBayesRefinementNewOrder) {
+
+  hid_t file;
+  herr_t status;
+
+  /* extract data and output */
+  file = H5Fopen("unittest7.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+  
+  double d[1];
+  H5LTread_dataset(file, "/nData", H5T_NATIVE_DOUBLE, d);
+  int N = (int) d[0];
+
+  H5LTread_dataset(file, "/L", H5T_NATIVE_DOUBLE, d);
+  int L = (int) d[0];
+
+  H5LTread_dataset(file, "/F", H5T_NATIVE_DOUBLE, d);
+  int F = (int) d[0];
+
+  H5LTread_dataset(file, "/modelOrder", H5T_NATIVE_DOUBLE, d);
+  int modelOrder = (int) d[0];
+
+  H5LTread_dataset(file, "/pitch", H5T_NATIVE_DOUBLE, d);
+  double pitch = d[0];
+
+  double * x = vector(N);
+  H5LTread_dataset(file, "/data", H5T_NATIVE_DOUBLE, x);
+
+
+  double pitch_bounds[2];
+  H5LTread_dataset(file, "/pitchBounds", H5T_NATIVE_DOUBLE, pitch_bounds);
+  #ifdef DOUBLE
+  double * pb = pitch_bounds;
+  #else
+  float pb[2];
+  pb[0] = (float)pitch_bounds[0]; pb[1] = (float)pitch_bounds[1];
+  #endif
+
+  status = H5Fclose(file);
+
+  /* construct object and compute  */
+  single_pitch * sp = new single_pitch(L, F, N, pb);
+
+  #ifdef SINGLE
+  float * xs = vector(N);
+  for(int l = 0 ; l < N ; ++l)
+    xs[l] = (float)x[l];
+  sp->compute(xs);
+  sp->refine(xs, 1e-8);
+  del_vector(xs);
+  #else
+  sp->compute(x);
+  sp->refine(x, 1e-8);
+  #endif
+
+  
+  
+  FTYPE omega_0h = sp->est_fast(x, 0.0, 1e-3);
+  int estModelOrder = sp->modelOrder();
+  ASSERT_NEAR(omega_0h/(2*M_PI), pitch, 1e-3); 
+  ASSERT_EQ(modelOrder, estModelOrder);
+
+  delete sp;
+  del_vector(x);
 }
 
 int main(int argc, char **argv){

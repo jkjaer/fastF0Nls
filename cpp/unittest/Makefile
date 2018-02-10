@@ -17,7 +17,7 @@ FTYPE = -DDOUBLE
 
 #LINK =  -DMKL $(MKL) -DCHEBYSHEV
 #LINK = -DMKL $(MKL)
-LINK = -lfftw3
+LINK = -lfftw3 -DCHEBYSHEV
 
 all:
 	g++ -g -fno-inline -Wno-write-strings $(FTYPE) $(INCLUDE) -isystem $(GTEST)/include ../src/single_pitch.cpp ../src/tools.cpp ../src/th.cpp ../src/vector.cpp test.cpp $(GTEST)/libgtest.a $(INCLUDE) $(LIBSHDF) $(LINK) -pthread -o test

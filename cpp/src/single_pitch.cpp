@@ -3,7 +3,6 @@
 
 single_pitch::single_pitch(int L, int F, int N, FTYPE * pB){
 
-
   maxModelOrder = L;
   nFftGrid = F;
   nData = N;
@@ -14,7 +13,6 @@ single_pitch::single_pitch(int L, int F, int N, FTYPE * pB){
   int iOrder;
   int nPitchesOld=-1;
   int nPitchesOldOld=-1;
-
 
   // Compute some values for later
   minFftIndex = (int)ceil(nFftGrid*pitchBounds[0]);
@@ -113,8 +111,6 @@ single_pitch::single_pitch(int L, int F, int N, FTYPE * pB){
                    alpha2, Gamma2);
     
   }//end of iOrder for-loop
-
-  
 
   del_vector(phi1);
   del_vector(psi1);
@@ -284,15 +280,12 @@ void single_pitch::compute(FTYPE * x){
       CvmdAddInplace(nPitches, t4, t1);
     }
     CvmdCopy(nPitches, t4, costFunctionMatrix[iOrder-1]);
-
   }
-
 }
 
 
 single_pitch::~single_pitch(){
   
-
   delete [] nPitchesAll;
 
   del_vector(dftData1);
@@ -332,7 +325,6 @@ single_pitch::~single_pitch(){
   delete [] lnBF;
 
   del_vector(range);
-
 }
 
 
@@ -368,8 +360,7 @@ void single_pitch::update_ls_sol(int iOrder, int nPitches, int nPitchesOld,
     CvmdAdd(nPitches, t4 + k*nPitchesOld, t2, lsSol + k*nPitches);
   }
   CvmdMul(nPitches, t1, Gamma + Mp*(iOrder-1) + (iOrder-1)*nPitches, 
-          lsSol + (iOrder-1)*nPitches);
-  
+          lsSol + (iOrder-1)*nPitches);  
 }
 
 
@@ -504,8 +495,7 @@ void single_pitch::update_gamma(int iOrder, int nPitches, int nPitchesOld,
       for(k = 0 ; k < iOrder-1 ; ++k){
         CvmdMul(nPitches, t3 + nPitches*k, t4, 
                 Gamma + Mp*(iOrder-1) + nPitches*k);
-      }
-      
+      }      
     }
 }
 
@@ -604,8 +594,7 @@ void single_pitch::update_gamma_p(int iOrder, int nPitches, int nPitchesOld,
       for(k = 0 ; k < iOrder-1 ; ++k){
         CvmdMul(nPitches, t3 + nPitches*k, t4, 
                 Gamma + Mp*(iOrder-1) + nPitches*k);
-      }
-      
+      }      
     }
 }
 
@@ -632,7 +621,6 @@ FTYPE single_pitch::compute_obj(FTYPE omega, FTYPE * x,
   CvmdDiv(2*iOrder+1, t1, t2, ccVectors + 1);
   CvmdScal(2*(iOrder+1), 0.5, ccVectors);
 
-
   /* n = -(nData-1)/2:-(nData-1)/2+nData-1; */
   FTYPE * n = vector(nData);
   CvmdAddConstant(nData, -(nData-1)*0.5, range, n);
@@ -645,7 +633,6 @@ FTYPE single_pitch::compute_obj(FTYPE omega, FTYPE * x,
   */
   FTYPE * bc = vector(iOrder);
   FTYPE * bs = vector(iOrder);
-
   
   #ifdef CHEBYSHEV
   /* Implementation using Chebyshev recursive method */
@@ -737,14 +724,11 @@ FTYPE single_pitch::compute_obj(FTYPE omega, FTYPE * x,
   int K = ((iOrder+1)*(iOrder))/2;
   FTYPE * gamma = vector(K);
 
-
   th(iOrder-1, t, h, gamma);
   solve(iOrder-1, t, h, bc, gamma, ac);
-
   
   for(int k = 0; k < 2*(iOrder-1)+1 ; ++k)
     h[k] = -h[k];
-
 
   thp(iOrder-1, t, h, gamma);
   solve(iOrder-1, t, h, bs, gamma, as);
@@ -759,10 +743,7 @@ FTYPE single_pitch::compute_obj(FTYPE omega, FTYPE * x,
   del_vector(h);
   del_vector(gamma);
 
-
   return obj;
-
-
 }
 
 
@@ -771,7 +752,6 @@ FTYPE single_pitch::compute_obj(FTYPE omega, FTYPE * x,
  Compute the objective at omega, for data x, with length nData 
   and order iOrder
 */
-
 FTYPE single_pitch::compute_obj(FTYPE omega, FTYPE * x, int iOrder){
 
   FTYPE * ac = new FTYPE [iOrder];
@@ -783,7 +763,6 @@ FTYPE single_pitch::compute_obj(FTYPE omega, FTYPE * x, int iOrder){
   delete [] as;
 
   return obj;
-
 }
 
 
@@ -837,17 +816,42 @@ FTYPE * single_pitch::refine(FTYPE *x, FTYPE eps){
     omega_u = omega + res;
     omega_0h[iOrder-1] = golden(x, iOrder, omega_l, omega_u, eps);
   }
-
   return omega_0h;
+}
+
+void single_pitch::compute_max_on_grid(void){
+
+  for(int iOrder = 1 ; iOrder <= maxModelOrder ; ++iOrder){
+    omega_0h[iOrder-1] = argmax_obj(iOrder);
+  }
+}
+
+/* refine of the grid solution that was latest computed 
+   returns an estimate in radians per sample
+
+  eps is the size of of the last interval measured in radian per samples
+*/
+FTYPE single_pitch::refine_single(FTYPE *x, int iOrder, FTYPE eps){
+  FTYPE res = 2*M_PI/nFftGrid;
+  FTYPE omega, omega_l, omega_u;
+  /* eps accuracy could be modified to follow CRLB or % of a note */
+
+  if (iOrder >= 1){
+    omega = argmax_obj(iOrder);
+    omega_l = omega - res;
+    omega_u = omega + res;
+    return golden(x, iOrder, omega_l, omega_u, eps);
+  }
+  return -1;
 }
 
 /* refine of the grid solution that was latest computed 
    returns a pointer to an internal length maxModelOrder array
 
-  default eps = 1e-6
+  default eps = 1e-4
 */
 FTYPE * single_pitch::refine(FTYPE *x){
-  return refine(x, 1e-6);
+  return refine(x, 1e-4);
 }
 
 /* 
@@ -895,7 +899,6 @@ FTYPE single_pitch::golden(FTYPE * x, int iOrder,
       fb = fa;
       fa = -compute_obj(omega_a, x, iOrder);
       }
-
   }
 
   if( fa > fb )
@@ -904,7 +907,6 @@ FTYPE single_pitch::golden(FTYPE * x, int iOrder,
     return 0.5*(omega_l + omega_a);
   else
     return 0.5*(omega_a + omega_b);
-
 }
 
 /* perform model order selection on the data x at 
@@ -919,8 +921,6 @@ FTYPE single_pitch::golden(FTYPE * x, int iOrder,
   Vol 62, pp. 225-238, 2014
 
 */
-
-
 int single_pitch::model_order_selection(FTYPE * x){
   return single_pitch::model_order_selection(x, 0);
 }
@@ -991,29 +991,24 @@ int single_pitch::model_order_selection(FTYPE * x, FTYPE lnBFZeroOrder){
       
       break;
     }
-
-
   }
 
   if( order == 0 ){
     order = CvmdArgmax(maxModelOrder + 1, lnBF); 
   }
 
-
   del_vector(ac);
   del_vector(as);
 
   return order;
-
 }
-
 
 /*
    The single step function that performs the three steps
 
    1. Calculate the objective function for all candidate model
        order and on the Fourier grid
-   2. Refine the best estiamtes for each model order
+   2. Refine the best estimates for each model order
    3. Perform model order selection
 
    and return the estimated frequency in radians per sample
@@ -1021,8 +1016,8 @@ int single_pitch::model_order_selection(FTYPE * x, FTYPE lnBFZeroOrder){
 FTYPE single_pitch::est(FTYPE * x){
 
   compute(x);
-  refine(x);
-  estOrder = model_order_selection(x);
+  refine(x, 1e-6);
+  estOrder = model_order_selection(x, 0.0);
 
   if( estOrder >= 0 )
     return omega_0h[estOrder-1];
@@ -1030,14 +1025,36 @@ FTYPE single_pitch::est(FTYPE * x){
     return 0.0;
 }
 
-FTYPE single_pitch::est(FTYPE * x, FTYPE lnBFZeroOrder){
+FTYPE single_pitch::est(FTYPE * x, FTYPE lnBFZeroOrder, FTYPE eps){
 
   compute(x);
-  refine(x);
+  refine(x, eps);
   estOrder = model_order_selection(x, lnBFZeroOrder);
 
   if( estOrder >= 0 )
     return omega_0h[estOrder-1];
+  else
+    return 0.0;
+}
+
+/*
+   The single step function that performs the three steps
+
+   1. Calculate the objective function for all candidate model
+       order and on the Fourier grid
+   2. Perform model order selection
+   3. Refine the for the selected model order
+
+   and return the estimated frequency in radians per sample
+ */
+FTYPE single_pitch::est_fast(FTYPE * x, FTYPE lnBFZeroOrder, FTYPE eps){
+
+  compute(x);
+  compute_max_on_grid();
+  estOrder = model_order_selection(x, lnBFZeroOrder);
+  
+  if( estOrder >= 0 )
+    return refine_single(x, estOrder, eps);
   else
     return 0.0;
 }

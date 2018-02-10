@@ -8,7 +8,7 @@ MKL = -m64 -I$(MKLROOT)/mkl/include -I$(MKLROOT)/mkl/include/fftw -L$(MKLROOT)/m
 
 FTYPE = -DDOUBLE
 #LINK =  -DMKL $(MKL) -DCHEBYSHEV
-LINK = -lfftw3 
+LINK = -lfftw3 -DCHEBYSHEV
 
 
 all:

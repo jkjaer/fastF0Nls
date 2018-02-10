@@ -50,19 +50,19 @@ public:
   FTYPE compute_obj(FTYPE omega, FTYPE * x, int iOrder);
   FTYPE compute_obj(FTYPE omega, FTYPE * x, int iOrder, FTYPE * ac, FTYPE * as);
 
-  
   FTYPE * refine(FTYPE * x);
-
   FTYPE * refine(FTYPE * x, FTYPE eps);
-
+  FTYPE refine_single(FTYPE *x, int iOrder, FTYPE eps);
+  void compute_max_on_grid(void);
+    
   FTYPE golden(FTYPE * x, int iOrder, FTYPE omega_L, FTYPE omega_U, FTYPE eps);
 
   int model_order_selection(FTYPE * x);
   int model_order_selection(FTYPE * x, FTYPE lnBFZeroOrder);
 
   FTYPE est(FTYPE * x);
-  FTYPE est(FTYPE * x, FTYPE lnBFZeroOrder);
-  
+  FTYPE est(FTYPE * x, FTYPE lnBFZeroOrder, FTYPE eps);
+  FTYPE est_fast(FTYPE * x, FTYPE lnBFZeroOrder, FTYPE eps);
 
   FTYPE max_obj(int iOrder);
   FTYPE argmax_obj(int iOrder);
@@ -131,12 +131,17 @@ extern "C"{
                             nData, pitchBounds);
   }
   
-  FTYPE single_pitch_est(single_pitch * sp, FTYPE * x, FTYPE lnBFZeroOrder)
-     {return sp->est(x, lnBFZeroOrder);};
+  FTYPE single_pitch_est(single_pitch * sp, FTYPE * x, FTYPE lnBFZeroOrder, FTYPE eps){
+    return sp->est(x, lnBFZeroOrder, eps);
+  }
 
-  void single_pitch_del(single_pitch * sp){delete sp;};
+  FTYPE single_pitch_est_fast(single_pitch * sp, FTYPE * x, FTYPE lnBFZeroOrder, FTYPE eps){
+    return sp->est_fast(x, lnBFZeroOrder, eps);
+  }
+  
+  void single_pitch_del(single_pitch * sp){delete sp;}
 
-  int single_pitch_model_order(single_pitch * sp){return sp->modelOrder();};
+  int single_pitch_model_order(single_pitch * sp){return sp->modelOrder();}
 }
 #endif
 

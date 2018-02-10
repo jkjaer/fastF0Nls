@@ -8,9 +8,6 @@ apt-get install libfftw3-3 libfftw3-dev
 
 MKL:
  Download MKL: https://software.intel.com/en-us/mkl
- Remember to set path, e.g. using
-
-  source /opt/intel/compilers_and_libraries/linux/mkl/bin/mklvars.sh intel64
 
 Makefile
  Set optional MKL
@@ -31,9 +28,3 @@ Select one of the following LINK options
      LINK = -lfftw3
 
 with -DREGULARIZE the system is regularized with eps = 1e-8
-
-Run files:
-
-  ./timing : Prints timing measurement for a single setup
-  ./profile : A simpler setup usefull for analysing using a profiler e.g.
-     valgrind --tool=callgrind ./profile

@@ -16,8 +16,9 @@ int main(int argc, char **argv){
   struct timeval tim;
   double l1, l2;
   int rpt = 100;
-
-  printf("Repetitions %d, Signal length N = %d, Max model order L = %d\n", rpt, N, L);
+  double eps = 1e-3;
+  
+  printf("Repetitions %d, Signal length N = %d, Max model order L = %d, eps (accuracy) = %1.1e\n", rpt, N, L, eps);
   /* construct solver object */
   gettimeofday(&tim, NULL);
   l1 = tim.tv_sec + tim.tv_usec*1e-6;
@@ -42,14 +43,14 @@ int main(int argc, char **argv){
   l1 = tim.tv_sec + tim.tv_usec*1e-6;
 
   for( j = 0 ; j < rpt ; ++j){
-    sp->compute(x);
+    sp->est(x, 1.0, eps);
   }
 
   gettimeofday(&tim, NULL);
   l2 = tim.tv_sec + tim.tv_usec*1e-6;
 
-  printf("Time total without refinement     : %2.5f [s]\n", (l2-l1));
-  printf("Time per solve without refinement : %2.5f [s]\n", (l2-l1)/rpt);
+  printf("Time total with standard ordering     : %2.5f [s]\n", (l2-l1));
+  printf("Time per solve with standard ordering : %2.5f [s]\n", (l2-l1)/rpt);
 
 
   /* repeat with refinement */
@@ -59,15 +60,14 @@ int main(int argc, char **argv){
   l1 = tim.tv_sec + tim.tv_usec*1e-6;
 
   for( j = 0 ; j < rpt ; ++j){
-    sp->compute(x);
-    omega_0h = sp->refine(x);
+    sp->est_fast(x, 1.0, eps);
   }
 
   gettimeofday(&tim, NULL);
   l2 = tim.tv_sec + tim.tv_usec*1e-6;
 
-  printf("Time total with refinement    : %2.5f [s]\n", (l2-l1));
-  printf("Time per solve with refinement: %2.5f [s]\n", (l2-l1)/rpt);
+  printf("Time total with permuted ordering (fast)     : %2.5f [s]\n", (l2-l1));
+  printf("Time per solve with permuted ordering (fast) : %2.5f [s]\n", (l2-l1)/rpt);
 
   delete sp;
   delete [] x;
