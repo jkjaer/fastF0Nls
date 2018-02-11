@@ -21,12 +21,15 @@ lib.single_pitch_model_order.argtypes = [c_void_p];
 lib.single_pitch_model_order.restype = int;
 
 class single_pitch(object):
-    def __init__(self, maxModelOrder, nFftGrid, nData, pitchBounds):
+    def __init__(self, nData, maxModelOrder, pitchBounds, nFftGrid=None):
         """
         Initialized the object
         
         """
-        
+
+        if nFftGrid == None:
+            nFftGrid = 5*nData*maxModelOrder
+            
         self.obj = lib.single_pitch_new(maxModelOrder, nFftGrid, nData,
                                         pitchBounds.ctypes.data)
 

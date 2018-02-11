@@ -15,9 +15,8 @@ class TestModelOrderOne(unittest.TestCase):
         omega = 0.1
         sigma = 0.01
         L = 15
-        pitch_bounds = np.array([0.01, 0.045])
-        F = 5*L*N
-        sp = single_pitch.single_pitch(L, F, N, pitch_bounds)
+        pitch_bounds = np.array([0.01, 0.45])
+        sp = single_pitch.single_pitch(N, L, pitch_bounds)
         lnBFZeroOrder = 10.0
         rpt = 3
     
@@ -38,9 +37,8 @@ class TestModelOrderOne(unittest.TestCase):
         omega = 0.1
         sigma = 0.01
         L = 15
-        pitch_bounds = np.array([0.01, 0.045])
-        F = 5*L*N
-        sp = single_pitch.single_pitch(L, F, N, pitch_bounds)
+        pitch_bounds = np.array([0.01, 0.45])
+        sp = single_pitch.single_pitch(N, L, pitch_bounds)
         lnBFZeroOrder = 10.0
         rpt = 3
     
@@ -63,9 +61,8 @@ class TestModelOrderTwo(unittest.TestCase):
         omega = 0.1
         sigma = 0.01
         L = 15
-        pitch_bounds = np.array([0.01, 0.045])
-        F = 5*L*N
-        sp = single_pitch.single_pitch(L, F, N, pitch_bounds)
+        pitch_bounds = np.array([0.01, 0.45])
+        sp = single_pitch.single_pitch(N, L, pitch_bounds)
         lnBFZeroOrder = 10.0
         rpt = 3
     
@@ -86,9 +83,8 @@ class TestModelOrderTwo(unittest.TestCase):
         omega = 0.1
         sigma = 0.01
         L = 15
-        pitch_bounds = np.array([0.01, 0.045])
-        F = 5*L*N
-        sp = single_pitch.single_pitch(L, F, N, pitch_bounds)
+        pitch_bounds = np.array([0.01, 0.45])
+        sp = single_pitch.single_pitch(N, L, pitch_bounds)
         lnBFZeroOrder = 10.0
         rpt = 3
     
