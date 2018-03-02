@@ -23,8 +23,18 @@ lib.single_pitch_model_order.restype = int;
 class single_pitch(object):
     def __init__(self, nData, maxModelOrder, pitchBounds, nFftGrid=None):
         """
-        Initialized the object
+        Initialize the object
         
+        Example:
+        N = 500
+        L = 15
+        pitch_bounds = np.array([0.01, 0.45])
+        sp = single_pitch(L, N, pitch_bounds)
+
+        Uses default nFftGrid = 5NL. Otherwise set via parameter nFftGrid
+
+        Pitch bound is in normalized frequency (1.0 = Nyquist frequency)
+
         """
 
         if nFftGrid == None:
@@ -35,8 +45,17 @@ class single_pitch(object):
 
     def est(self, data, lnBFZeroOrder=0.0, eps=1e-3, method=0):
         """
-        Estimates based on double vector (data) and Bayes 
-        factor for model order zero (default 0.0)
+        Estimates based on double vector (data)
+
+        The function returns the estimated frequency in radians per sample
+
+        Addtional parameters
+        lnBFZeroOrder: log Baysian factor for order zero. (default 0.0)
+               May be increased if non desirable low power signals interfere 
+               and should considered noise.
+        eps:  Requested accuracy in radians per sample. (Defaut 1e-3)
+              Higher accuracy (smaller eps) may require more solve time
+              and vice-versa
 
         If method = 0 (default), then the algorithm uses the following steps
 
@@ -53,8 +72,6 @@ class single_pitch(object):
          2. Refine the best estimates for each model order
          3. Perform model order selection
 
-        The function returns the estimated frequency in radians per sample
-        
         """
 
         if method == 0:
@@ -64,7 +81,12 @@ class single_pitch(object):
             return lib.single_pitch_est(self.obj, data.ctypes.data, 
                                         lnBFZeroOrder, eps)
 
-    def modelOrder(self):    
+    def modelOrder(self):
+        """
+        Retuns the estimated model order for the lastest solve.
+
+        """
+        
         return lib.single_pitch_model_order(self.obj);
     
     def __del__(self):

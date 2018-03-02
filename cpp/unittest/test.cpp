@@ -1,10 +1,10 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <math.h>
-#include "hdf5.h"
-#include "hdf5_hl.h"
 #include <stdio.h>
 
+#include "hdf5.h"
+#include "hdf5_hl.h"
 #include "gtest/gtest.h"
 
 #include "../src/single_pitch.hpp"
@@ -39,7 +39,7 @@ TEST_F(RealDataTest, ComputeGamma1) {
   herr_t status;
 
 
-  file = H5Fopen("unittest1.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+  file = H5Fopen("data_files/unittest1.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
 
   double d[1];
   H5LTread_dataset(file, "/nData", H5T_NATIVE_DOUBLE, d);
@@ -123,7 +123,7 @@ TEST_F(RealDataTest, ComputeCost1) {
   herr_t status;
 
   /* extract data and output */
-  file = H5Fopen("unittest1.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+  file = H5Fopen("data_files/unittest1.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
   
   double d[1];
   H5LTread_dataset(file, "/nData", H5T_NATIVE_DOUBLE, d);
@@ -199,7 +199,7 @@ TEST_F(RealDataTest, ComputeGamma2) {
   herr_t status;
 
 
-  file = H5Fopen("unittest2.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+  file = H5Fopen("data_files/unittest2.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
 
   double d[1];
   H5LTread_dataset(file, "/nData", H5T_NATIVE_DOUBLE, d);
@@ -283,7 +283,7 @@ TEST_F(RealDataTest, ComputeCost2) {
   herr_t status;
 
   /* extract data and output */
-  file = H5Fopen("unittest2.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+  file = H5Fopen("data_files/unittest2.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
   
   double d[1];
   H5LTread_dataset(file, "/nData", H5T_NATIVE_DOUBLE, d);
@@ -359,7 +359,7 @@ TEST_F(RealDataTest, ComputeSingleCost3) {
   herr_t status;
 
   /* extract data and output */
-  file = H5Fopen("unittest3.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+  file = H5Fopen("data_files/unittest3.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
   
   double d[1];
   H5LTread_dataset(file, "/nData", H5T_NATIVE_DOUBLE, d);
@@ -447,7 +447,7 @@ TEST_F(RealDataTest, ComputeSingleCost4) {
   herr_t status;
 
   /* extract data and output */
-  file = H5Fopen("unittest4.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+  file = H5Fopen("data_files/unittest4.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
   
   double d[1];
   H5LTread_dataset(file, "/nData", H5T_NATIVE_DOUBLE, d);
@@ -535,7 +535,7 @@ TEST_F(RealDataTest, Refine4) {
   herr_t status;
 
   /* extract data and output */
-  file = H5Fopen("unittest5.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+  file = H5Fopen("data_files/unittest5.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
   
   double d[1];
   H5LTread_dataset(file, "/nData", H5T_NATIVE_DOUBLE, d);
@@ -613,7 +613,7 @@ TEST_F(RealDataTest, ModelOrderSelectionNoNoise) {
   herr_t status;
 
   /* extract data and output */
-  file = H5Fopen("unittest6.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+  file = H5Fopen("data_files/unittest6.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
   
   double d[1];
   H5LTread_dataset(file, "/nData", H5T_NATIVE_DOUBLE, d);
@@ -681,7 +681,7 @@ TEST_F(RealDataTest, ModelOrderSelectionNoise) {
   herr_t status;
 
   /* extract data and output */
-  file = H5Fopen("unittest7.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+  file = H5Fopen("data_files/unittest7.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
   
   double d[1];
   H5LTread_dataset(file, "/nData", H5T_NATIVE_DOUBLE, d);
@@ -757,7 +757,7 @@ TEST_F(RealDataTest, ModelOrderSelectionNoiseBayes) {
   herr_t status;
 
   /* extract data and output */
-  file = H5Fopen("unittest7.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+  file = H5Fopen("data_files/unittest7.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
   
   double d[1];
   H5LTread_dataset(file, "/nData", H5T_NATIVE_DOUBLE, d);
@@ -834,7 +834,7 @@ TEST_F(RealDataTest, ModelOrderSelectionNoiseBayesRefinementNewOrder) {
   herr_t status;
 
   /* extract data and output */
-  file = H5Fopen("unittest7.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+  file = H5Fopen("data_files/unittest7.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
   
   double d[1];
   H5LTread_dataset(file, "/nData", H5T_NATIVE_DOUBLE, d);
@@ -881,8 +881,6 @@ TEST_F(RealDataTest, ModelOrderSelectionNoiseBayesRefinementNewOrder) {
   sp->compute(x);
   sp->refine(x, 1e-8);
   #endif
-
-  
   
   FTYPE omega_0h = sp->est_fast(x, 0.0, 1e-3);
   int estModelOrder = sp->modelOrder();

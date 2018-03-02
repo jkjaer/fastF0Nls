@@ -11,7 +11,7 @@ import single_pitch
 [samplingFreq, speechSignal] = wavfile.read('roy.wav')
 nData = speechSignal.shape[0]
 
-#% set up
+# set up
 segmentTime = 0.025 # seconds
 segmentLength = round(segmentTime*samplingFreq) # samples
 nSegments = int(np.floor(nData/segmentLength))
@@ -40,11 +40,6 @@ powerSpectrum = np.abs(stft)**2;
 # plot the results
 maxDynamicRange = 60 # dB
 plt.pcolormesh(stftTimeVector, stftFreqVector, 10*np.log10(powerSpectrum))
-
-#imagesc(stftTimeVector, stftFreqVector, ...
-#    10*log10(dynamicRangeLimiting(powerSpectrum, maxDynamicRange)));
-#set(gca,'YDir','normal')
-#hold on
 plt.scatter(timeVector, f0Estimates, c='b', s=20)
 plt.title('Why where you away a year, Roy?')
 plt.xlabel('time [s]')
