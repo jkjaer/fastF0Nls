@@ -316,15 +316,16 @@ classdef fastF0Nls < handle
                 logMarginalLikelihood = computeLogMarginalLikelihood(...
                     scaledPitchLogPosterior, obj.fullPitchGrid);
                 % normalise the pitch pdf
-                obj.logPitchPdfs = scaledPitchLogPosterior./...
-                    (logMarginalLikelihood'*...
-                    ones(1,size(scaledPitchLogPosterior,2)));
+                
+                obj.logPitchPdfs = scaledPitchLogPosterior-...
+                    logMarginalLikelihood'*...
+                    ones(1,size(scaledPitchLogPosterior,2));
                 % compute the log Bayes' factor
                 logMarginalLikelihood = [0, logMarginalLikelihood]; % add the null model
                 postModelPmf = computePostModelPmf(...
                     logMarginalLikelihood, logModelPrior);
                 obj.logModelPmf = log(postModelPmf);
-                
+
                 % step 4: compute point estimates of the model parameters
                 [~, estimatedOrderIdx] = max(postModelPmf);
                 estimatedOrder = estimatedOrderIdx-1;
@@ -334,7 +335,8 @@ classdef fastF0Nls < handle
                 % is provided by the grid. Otherwise return the coarse
                 % estimate.
                 if estimatedOrder > 0
-                    [~, pitchIndex] = max(costs(estimatedOrder, :));
+                    [~, pitchIndex] = ...
+                        max(scaledPitchLogPosterior(estimatedOrder, :));
                     coarsePitchEstimate = obj.fullPitchGrid(pitchIndex(1));
                     if obj.refinementTol < obj.defaultRefinementTol
                         pitchLimits = ...
