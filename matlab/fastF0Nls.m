@@ -152,6 +152,9 @@ classdef fastF0Nls < handle
         validFftIndices
         defaultRefinementTol
         refinementTol
+        gPriorParam = 3
+        logPitchPdfs % the pitch pdf (column) for every candidate model order
+        logModelPmf % an (L+1)x1 vector
     end
 
     methods
@@ -231,17 +234,17 @@ classdef fastF0Nls < handle
             % cross-correlation vectors
             obj.crossCorrelationVectors = ...
                 [N*ones(1, nPitches)/2 + N*obj.epsilon;...
-                 sin(pi*(1:2*L)'*obj.fullPitchGrid'*N)./...
-                 (2*sin(pi*(1:2*L)'*obj.fullPitchGrid'))];
+                sin(pi*(1:2*L)'*obj.fullPitchGrid'*N)./...
+                (2*sin(pi*(1:2*L)'*obj.fullPitchGrid'))];
 
             obj.fftShiftVector = ...
                 exp(1i*2*pi*(0:ceil(F/2)-1)'*(N-1)/(2*F));
 
             % Compute Gamma for the T+H and T-H systems
             [obj.Gamma1, obj.Gamma2] = computeGamma(L, F, pitchBounds, ...
-                                                    obj.crossCorrelationVectors, nPitches, ...
-                                                    obj.validFftIndices, ...
-                                                    obj.dcIsIncluded);
+                obj.crossCorrelationVectors, nPitches, ...
+                obj.validFftIndices, ...
+                obj.dcIsIncluded);
         end
         
         function varargout = computeCostFunctions(obj, x)
@@ -268,7 +271,7 @@ classdef fastF0Nls < handle
         end
         
         function varargout = estimate(obj, x, varargin)
-            % Estimate fundamental and order of the input signal x
+            % Estimate fundamental frequency and order of the signal x
                 
             % validate input 
             if ~isvector(x) && length(x) == obj.N
@@ -293,23 +296,43 @@ classdef fastF0Nls < handle
                 estimatedPitch = nan;
                 estimatedOrder = 0;
             else
-                % Step 1: Compute cost function
+                % Step 1: compute the priors on the pitch and the model 
+                % order for the current frame
+                pitchLogPrior = log(1/diff(obj.pitchBounds));
+                logModelPrior = log(1/(obj.L+1));
+                % Step 2: compute the profile log-likelihood function 
+                % over only the fundamental frequency (the linear
+                % parameters, noise variance and g have been integrated
+                % out)
                 costs = obj.computeCostFunctions(x);
-                    
-                % Step 2: Estimate model order and fundamental frequency
                 cod = costs*(1/(x'*x));
-                delta = 3;
-                [~, logMarginalLikelihood] = ...
-                    pitchMarginalLikelihoodLaplaceG(cod, obj.N, delta);
-                bayesFactor = trapezBayesFactor(logMarginalLikelihood, ...
-                                                obj.fullPitchGrid);
-                [~, estimatedOrderIdx] = max(bayesFactor);
+                [~, pitchLogLikelihood] = ...
+                    computePitchLogLikelihood(cod, obj.N, obj.gPriorParam);
+                
+                % Step 3: compute the posteriors on the pitch and the model 
+                % order for the current frame
+                scaledPitchLogPosterior = ...
+                    pitchLogLikelihood + pitchLogPrior;
+                logMarginalLikelihood = computeLogMarginalLikelihood(...
+                    scaledPitchLogPosterior, obj.fullPitchGrid);
+                % normalise the pitch pdf
+                obj.logPitchPdfs = scaledPitchLogPosterior./...
+                    (logMarginalLikelihood'*...
+                    ones(1,size(scaledPitchLogPosterior,2)));
+                % compute the log Bayes' factor
+                logMarginalLikelihood = [0, logMarginalLikelihood]; % add the null model
+                postModelPmf = computePostModelPmf(...
+                    logMarginalLikelihood, logModelPrior);
+                obj.logModelPmf = log(postModelPmf);
+                
+                % step 4: compute point estimates of the model parameters
+                [~, estimatedOrderIdx] = max(postModelPmf);
                 estimatedOrder = estimatedOrderIdx-1;
 
-                % Step 3: Refine if estimated model order > 0 and the
-                % tolerance is set to a smaller tolerance than what is
-                % provided by the grid. Otherwise return the coarse
-                % estimate
+                % Refine the pitch estimate if estimated model order > 0
+                % and the tolerance is set to a smaller tolerance than what
+                % is provided by the grid. Otherwise return the coarse
+                % estimate.
                 if estimatedOrder > 0
                     [~, pitchIndex] = max(costs(estimatedOrder, :));
                     coarsePitchEstimate = obj.fullPitchGrid(pitchIndex(1));
@@ -338,12 +361,11 @@ classdef fastF0Nls < handle
                 varargout{2} = estimatedOrder;
             end
             if nargout >= 3
-                [~, alpha] = objFunction(estimatedPitch, x, estimatedOrder, obj.dcIsIncluded);
+                [~, alpha] = objFunction(estimatedPitch, x, ...
+                    estimatedOrder, obj.dcIsIncluded);
                 varargout{3} = alpha;
             end
             
         end
-        
-
     end
 end
