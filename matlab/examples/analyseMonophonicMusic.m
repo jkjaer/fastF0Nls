@@ -2,7 +2,8 @@ clear
 clc
 close all
 
-addpath ../
+% add the estimator object to the MATLAB path
+addpath ../fastF0Nls
 
 % audio is from the EBU SQAM CD
 [rawData, rawSamplingFreq] = audioread('09viola.flac');

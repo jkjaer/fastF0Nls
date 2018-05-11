@@ -2,7 +2,8 @@ clear
 clc
 close all
 
-addpath ../
+% add the estimator object to the MATLAB path
+addpath ../fastF0Nls
 
 % load the mono speech signal
 [speechSignal, samplingFreq] = audioread('roy.wav');
@@ -13,13 +14,15 @@ segmentTime = 0.025; % seconds
 segmentLength = round(segmentTime*samplingFreq); % samples
 nSegments = floor(nData/segmentLength);
 f0Bounds = [80, 400]/samplingFreq; % cycles/sample
-maxNoHarmonics = 15;
+maxNoHarmonics = 10;
 f0Estimator = fastF0Nls(segmentLength, maxNoHarmonics, f0Bounds);
 
 % do the analysis
 idx = 1:segmentLength;
 f0Estimates = nan(1,nSegments); % cycles/sample
 for ii = 1:nSegments
+    disp(['Processing segment ', num2str(ii), ' of ', ...
+        num2str(nSegments)]);
     speechSegment = speechSignal(idx);
     f0Estimates(ii) = f0Estimator.estimate(speechSegment);
     idx = idx + segmentLength;

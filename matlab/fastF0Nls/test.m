@@ -9,7 +9,6 @@ function tests = test()
 %    T. L. Jensen,  tlj@es.aau.dk
 %    Aalborg University, 2016
 %   
-    addpath('util/')
     tests = functiontests(localfunctions);
 end    
 

@@ -155,6 +155,10 @@ classdef fastF0Nls < handle
         gPriorParam = 3
         logPitchPdfs % the pitch pdf (column) for every candidate model order
         logModelPmf % an (L+1)x1 vector
+        
+        % computed point estimates
+        estPitch % cycles/sample
+        estOrder
     end
 
     methods
@@ -298,8 +302,9 @@ classdef fastF0Nls < handle
             else
                 % Step 1: compute the priors on the pitch and the model 
                 % order for the current frame
-                pitchLogPrior = log(1/diff(obj.pitchBounds));
+                pitchLogPrior = -log(diff(obj.pitchBounds));
                 logModelPrior = log(1/(obj.L+1));
+                
                 % Step 2: compute the profile log-likelihood function 
                 % over only the fundamental frequency (the linear
                 % parameters, noise variance and g have been integrated
@@ -316,11 +321,10 @@ classdef fastF0Nls < handle
                 logMarginalLikelihood = computeLogMarginalLikelihood(...
                     scaledPitchLogPosterior, obj.fullPitchGrid);
                 % normalise the pitch pdf
-                
                 obj.logPitchPdfs = scaledPitchLogPosterior-...
                     logMarginalLikelihood'*...
                     ones(1,size(scaledPitchLogPosterior,2));
-                % compute the log Bayes' factor
+                % compute the posterior model probabilities
                 logMarginalLikelihood = [0, logMarginalLikelihood]; % add the null model
                 postModelPmf = computePostModelPmf(...
                     logMarginalLikelihood, logModelPrior);
@@ -355,7 +359,10 @@ classdef fastF0Nls < handle
                     estimatedPitch = nan;
                 end
             end
-                
+            % store the computed estimates
+            obj.estPitch = estimatedPitch;
+            obj.estOrder = estimatedOrder;
+            
             if nargout >= 1
                 varargout{1} = estimatedPitch;
             end
