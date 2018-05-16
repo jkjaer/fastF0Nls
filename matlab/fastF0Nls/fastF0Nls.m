@@ -206,16 +206,24 @@ classdef fastF0Nls < handle
             else
                 obj.L = L;
             end
-
+            
+            % check the pitch bounds
             if ~ (isvector(pitchBounds) && length(pitchBounds) == 2) 
                 error(['Input argument pitchBound must be a 2-' ...
-                       'vector'])
+                       'vector.']);
             elseif pitchBounds(1) < obj.pitchBoundsOuter(1) || ...
                 pitchBounds(2) > obj.pitchBoundsOuter(2)
                 
                 error(['Input argument pitchBounds must be within the ' ...
                        'bounds specified in the constructor (at ' ...
-                       'least [0.0 0.5])'])
+                       'least [0.0 0.5]).']);
+            elseif pitchBounds(2) <= pitchBounds(1)
+                error(['The upper pitch bound must be bigger than the', ...
+                    ' bigger than the lower pitch bound.']);
+            elseif pitchBounds(1)*L >= obj.pitchBoundsOuter(2)
+                error(['The lower pitch bound or the maximum model', ...
+                    ' order is too big. Their product must be smaller', ...
+                    ' than 1/2.']);
             else
                 obj.pitchBounds = pitchBounds;
             end
