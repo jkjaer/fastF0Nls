@@ -2,7 +2,7 @@ Description of how to use and setup the fast NLS pitch estimator for MATLAB
 
 Please start by setting the current path of MATLAB to the examples folder and run either analyseSpeech.m or analyseMonophonicMusic.m to check that everything works.
 
-If you want to able to use the estimator from any MATLAB path, you should do the following:
+If you want to be able to use the estimator from any MATLAB path, you should do the following:
 1) Copy the folder fastF0Nls (the one in the same directory as this README-file) to somewhere in your filesystem (let us say <something>/MATLAB/lib/)
 2) add the following line to the startup.m script
 addpath <something>/MATLAB/lib/
