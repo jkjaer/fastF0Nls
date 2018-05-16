@@ -2,54 +2,19 @@ function tests = computeComplexHarmonicDftsTest()
     tests = functiontests(localfunctions);
 end
 
-function testComputedDftsComplex(testCase)
-    % setup
-    rng(2);
-    nData = 200;
-    startIndex = -(nData-1)/2;
-    dataVector = randn(nData,2)*[1;1i];
-    maxPitchOrder = 5;
-    pitchResolution = 1/(5*maxPitchOrder*nData);
-    pitchBounds = [0,nData-1]/nData;
-    fullPitchGrid = computePitchGrid(pitchResolution, pitchBounds, 1);
-    nDft = round(1/diff(fullPitchGrid(1:2)));
-    fftShiftVector = exp(-1i*2*pi*((0:nDft-1)/nDft)*startIndex);
-    for ii = 1:maxPitchOrder
-        pitchGrid = computePitchGrid(pitchResolution, pitchBounds, ii);
-        nPitches = length(pitchGrid);
-        if ii == 1
-            expHarmonicDfts = nan(maxPitchOrder, nPitches);
-            expPitchGrids = nan(maxPitchOrder, nPitches);
-        end
-        expPitchGrids(ii,1:nPitches) = pitchGrid;
-        for jj = 1:nPitches
-            sinusoid = ...
-                exp(1i*2*pi*pitchGrid(jj)*ii*((0:nData-1)+startIndex)');
-            expHarmonicDfts(ii,jj) = sinusoid'*dataVector;
-        end
-    end
-    [actHarmonicDfts, actPitchGrids] = ...
-        computeComplexHarmonicDfts(dataVector, fullPitchGrid, ...
-        maxPitchOrder, fftShiftVector);
-    testCase.assertEqual(actHarmonicDfts, expHarmonicDfts, ...
-        'absTol', 1e-11);
-    testCase.assertEqual(actPitchGrids, expPitchGrids, ...
-        'absTol', 1e-11);
-end
-
-function testComputedDftsReal(testCase)
+function testComputedDfts(testCase)
     % setup
     rng(2);
     nData = 200;
     startIndex = -(nData-1)/2;
     dataVector = randn(nData,1);
-    maxPitchOrder = 5;
+    maxPitchOrder = 10;
     pitchResolution = 1/(5*maxPitchOrder*nData);
     pitchBounds = [0,nData/2-1]/nData;
     fullPitchGrid = ...
         computePitchGrid(pitchResolution, pitchBounds, 1, true);
     nDft = round(1/diff(fullPitchGrid(1:2)));
-    fftShiftVector = exp(-1i*2*pi*((0:nDft-1)/nDft)*startIndex);
+    fftShiftVector = exp(-1i*2*pi*((0:nDft-1)'/nDft)*startIndex);
     for ii = 1:maxPitchOrder
         pitchGrid = ...
             computePitchGrid(pitchResolution, pitchBounds, ii, true);
@@ -68,9 +33,9 @@ function testComputedDftsReal(testCase)
     [actHarmonicDfts, actPitchGrids] = ...
         computeComplexHarmonicDfts(dataVector, fullPitchGrid, ...
         maxPitchOrder, fftShiftVector);
-    testCase.assertEqual(actHarmonicDfts, expHarmonicDfts, ...
-        'absTol', 1e-11);
     testCase.assertEqual(actPitchGrids, expPitchGrids, ...
+        'absTol', 1e-11);
+    testCase.assertEqual(actHarmonicDfts, expHarmonicDfts, ...
         'absTol', 1e-11);
 end
 
