@@ -289,6 +289,8 @@ classdef fastF0Nls < handle
             if ~isvector(x) && length(x) == obj.N
                 error(['First argument x must be vector of ' ...
                                'length N=', num2str(obj.N)]);
+            elseif any(isnan(x))
+                error(['There is at least one NaN in the data vector.']);
             end
             x = reshape(x, obj.N, 1); % make sure its a column
                                       % vector
