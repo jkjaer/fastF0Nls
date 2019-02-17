@@ -19,7 +19,7 @@ Please note that the code only contains a pitch estimator and NOT a pitch tracke
 
 - Maximum a-posteriori probability pitch tracking in noisy environments using harmonic model, Tabrikian, J.; Dubnov, S.; and Dickalov, Y.. In: IEEE Transactions on Speech and Audio Processing 12 (1), 2004, pp. 76-87.
 
-Alternatively, and much simpler, median smoothing or dynamic programming. See more in
+Alternatively, and much simpler, median smoothing or dynamic programming can also be used. See more in
 - Postprocessing techniques for voice pitch trackers,  Secrest, B.; Doddington, G.; in Proc. IEEE Int. Conf. Acoust., Speech, Signal Process. IEEE, 1982, vol. 7, pp. 172--175.
 - Pitch and voicing determination of speech with an extension toward music signals, Hess, W. J., Springer handbook of speech processing. Springer, Berlin, Heidelberg, 2008. 181-212.
 
