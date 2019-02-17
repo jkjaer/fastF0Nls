@@ -155,7 +155,7 @@ classdef fastF0Nls < handle
         gPriorParam = 3
         logPitchPdfs % the pitch pdf (column) for every candidate model order
         logModelPmf % an (L+1)x1 vector
-        
+        dataPowerRegParam = 5e-3; % discourage pitch detection for low power frames
         % computed point estimates
         estPitch % cycles/sample
         estOrder
@@ -320,7 +320,7 @@ classdef fastF0Nls < handle
                 % parameters, noise variance and g have been integrated
                 % out)
                 costs = obj.computeCostFunctions(x);
-                cod = costs*(1/(x'*x));
+                cod = costs*(1/(x'*x+obj.dataPowerRegParam));
                 [~, pitchLogLikelihood] = ...
                     computePitchLogLikelihood(cod, obj.N, obj.gPriorParam);
                 
