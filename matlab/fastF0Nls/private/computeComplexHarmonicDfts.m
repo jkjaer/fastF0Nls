@@ -3,13 +3,13 @@ function [harmonicDfts, pitchGrids] = ...
         pitchOrder, fftShiftVector)
     nDft = round(1/diff(fullPitchGrid(1:2)));
     dftData = fft(dataVector, nDft);
+    pitchBounds = fullPitchGrid([1,end]);
     % compensate for a symmetric time index (i.e., a start index of
     % -(nData-1)/2)
     fftShiftVectorLength = length(fftShiftVector);
     shiftedDftData = (dftData(1:fftShiftVectorLength).*fftShiftVector).';
     for ii = 1:pitchOrder
-        dftIndices = computeDftIndicesNHarmonic(nDft, ...
-            fullPitchGrid([1,end]), ii);
+        dftIndices = computeDftIndicesNHarmonic(nDft, pitchBounds, ii);
         nPitches = length(dftIndices);
         if ii == 1
             % allocate memory
