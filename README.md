@@ -15,9 +15,13 @@ To get started with the code, please see the examples and the documentation.
 
 ## Scope and limitations
 
-Please note that the code only contains a pitch estimator and NOT a pitch tracker. The difference is that a tracker contains a smoothing step on top of the estimator. The smooting step is there to minimise the risk of, e.g., octave errors (aka pitch halving) by smoothing out the estimates produced by the estimator which typically analyse the data on a segment-by-segment basis. Of course, our estimator can also be used inside a pitch tracker, and we recommend that the smoothing step by Tabrikian et al. is used. See more in
+Please note that the code only contains a pitch estimator and NOT a pitch tracker. The difference is that a tracker contains a smoothing step on top of the estimator. The smooting step is there to minimise the risk of, e.g., octave errors (aka pitch halving) by smoothing out the estimates produced by the estimator which typically analyse the data on a segment-by-segment basis. Of course, our estimator can also be used inside a pitch tracker. For the best performance, we recommend that the smoothing step by Tabrikian et al. is used. See more in
 
-- Maximum a-posteriori probability pitch tracking in noisy environments using harmonic model, Tabrikian, Joseph; Dubnov, Shlomo; and Dickalov, Yulya. In: IEEE Transactions on Speech and Audio Processing 12 (1), 2004, pp. 76-87.
+- Maximum a-posteriori probability pitch tracking in noisy environments using harmonic model, Tabrikian, J.; Dubnov, S.; and Dickalov, Y.. In: IEEE Transactions on Speech and Audio Processing 12 (1), 2004, pp. 76-87.
+
+Alternatively, and much simpler, median smoothing or dynamic programming can also be used. See more in
+- Postprocessing techniques for voice pitch trackers,  Secrest, B.; Doddington, G.; in Proc. IEEE Int. Conf. Acoust., Speech, Signal Process. IEEE, 1982, vol. 7, pp. 172--175.
+- Pitch and voicing determination of speech with an extension toward music signals, Hess, W. J., Springer handbook of speech processing. Springer, Berlin, Heidelberg, 2008. 181-212.
 
 For white Gaussian noise (WGN), the NLS estimator is the maximum likelihood estimator and is, therefore, asymptotically optimal (in a statistical sense). That is, no other unbiased estimator of the fundamental frequency has a lower variance than the NLS estimator if enough data are observed and the noise is white and Gaussian. In our experience, the NLS estimator is also one of the best estimators for short data segments, and it works well even for situations where a data segment contains as little as only one cycle of the periodic signal. For voiced speech, where the lowest fundamental frequency is typically bigger than 80 Hz, this means that the estimator typically works well down to a segment length of 12.5 ms. Increasing the segment length will, of course, increase the estimation accuracy and the robustness to noise, provided that the signal is approximately stationary.
 
@@ -34,5 +38,5 @@ Constructive feedback in any form is also very much appreciated. This applies to
 
 The code has been written by
 
-- Tobias Lindstrøm Jensen, Aalborg, Denmark
+- Tobias Lindstrøm Jensen, Aalborg University, Denmark
 - Jesper Kjær Nielsen, Audio Analysis Lab, CREATE, Aalborg University, Denmark
