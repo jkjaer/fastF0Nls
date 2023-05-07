@@ -1,4 +1,10 @@
+**Tip**: The estimator described here has recently been generalized to the case of coloured noise. Specifically, fast algorithms for fundamental frequency estimation in autoregressive noise have been found for the case where both the harmonic and autoregressive orders are unknown. Since the estimator described here is a special case of the generalised estimtaor, we strongly encourage you to check out the following link where both the paper and code can be found: [https://github.com/jkjaer/fastF0ArMl](https://github.com/jkjaer/fastF0ArMl).
+
+---
+
 # fastF0Nls - Fast Nonlinear Least Squares Estimation of the Fundamental Frequency (aka Pitch)
+
+
 
 Periodic signals are encountered in many real-world applications such as music processing, speech processing, sonar, order analysis, and electrocardiography (ECG). Such signals can be modelled as a weighted sum of sinusoids whose frequencies are integer multiples of a common fundamental frequency which in audio and speech applications is often referred to as the pitch. Therefore, an important and fundamental problem in the above mentioned applications is to estimate this fundamental frequency from an observed (and often noisy) data set.
 
@@ -25,7 +31,8 @@ Alternatively, and much simpler, median smoothing or dynamic programming can als
 
 For white Gaussian noise (WGN), the NLS estimator is the maximum likelihood estimator and is, therefore, asymptotically optimal (in a statistical sense). That is, no other unbiased estimator of the fundamental frequency has a lower variance than the NLS estimator if enough data are observed and the noise is white and Gaussian. In our experience, the NLS estimator is also one of the best estimators for short data segments, and it works well even for situations where a data segment contains as little as only one cycle of the periodic signal. For voiced speech, where the lowest fundamental frequency is typically bigger than 80 Hz, this means that the estimator typically works well down to a segment length of 12.5 ms. Increasing the segment length will, of course, increase the estimation accuracy and the robustness to noise, provided that the signal is approximately stationary.
 
-In our experience, the estimator does typically not break down if the noise is not white and Gaussian. However, if the noise is coloured and has most of the energy at the lower frequencies, then the estimator can suffer from problems with octave errors. In this case, we recommend that some kind of pre-whitening is applied to the data prior to estimating the fundamental frequency.
+In our experience, the estimator does typically not break down if the noise is not white and Gaussian. However, if the noise is coloured and has most of the energy at the lower frequencies, then the estimator can suffer from problems with octave errors. In this case, we recommend that the generalisation of the estimator to the case of coloured noise is used. See more here: [https://github.com/jkjaer/fastF0ArMl](https://github.com/jkjaer/fastF0ArMl).
+
 
 ## License
 
