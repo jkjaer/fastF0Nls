@@ -1,4 +1,4 @@
-**Tip**: The estimator described here has recently been generalized to the case of coloured noise. Specifically, fast algorithms for fundamental frequency estimation in autoregressive noise have been found for the case where both the harmonic and autoregressive orders are unknown. Since the estimator described here is a special case of the generalised estimtaor, we strongly encourage you to check out the following link where both the paper and code can be found: [https://github.com/jkjaer/fastF0ArMl](https://github.com/jkjaer/fastF0ArMl).
+**Tip**: The estimator described here has recently been generalized to the case of coloured noise. Specifically, fast algorithms for fundamental frequency estimation in autoregressive noise have been found for the case where both the harmonic and autoregressive orders are unknown. Since the estimator described here is a special case of the generalised estimator, we strongly encourage you to check out the following link where both the paper and code can be found: [https://github.com/jkjaer/fastF0ArMl](https://github.com/jkjaer/fastF0ArMl).
 
 ---
 
